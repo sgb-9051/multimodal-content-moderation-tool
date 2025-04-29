@@ -46,6 +46,6 @@ Thumbs.db
 # windsurf rules
 .windsurfrules
 
+# Logs and Quarantine directories
 logs/
-
 quarantine/
