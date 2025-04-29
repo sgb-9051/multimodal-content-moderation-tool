@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
+from dotenv import load_dotenv
+from alert_mailer import send_quarantine_alert
 import sys
 import numpy as np
 import cv2
@@ -11,6 +13,9 @@ from threading import Thread
 import webbrowser
 from datetime import datetime
 import io
+
+# Load environment variables from .env at startup
+load_dotenv()
 
 logger = setup_logger()
 
@@ -196,7 +201,7 @@ class NSFWQuarantineApp:
         footer_frame.pack(fill=tk.X, pady=(15, 0))
         
         footer_text = ttk.Label(footer_frame, 
-                               text='© 2025 KernelKlashKrew Team | Designed for hackathon', 
+                               text='2025 KernelKlashKrew Team | Designed for hackathon', 
                                style='Footer.TLabel')
         footer_text.pack(side=tk.LEFT)
         
@@ -424,11 +429,11 @@ class NSFWQuarantineApp:
             # --- FIXED LOGIC END ---
 
             apply_blur = True
-            blur_radius = 100  # Strong blur for flagged content
+            blur_radius = 125  # Strong blur for flagged content
             if is_safe is True:
                 apply_blur = False
             elif is_safe is None:
-                blur_radius = 100  # Light blur for unscanned content
+                blur_radius = 125  # Light blur for unscanned content
 
             if apply_blur:
                 img = self.apply_blur(img, blur_radius=blur_radius)
@@ -462,7 +467,7 @@ class NSFWQuarantineApp:
                 self.preview_canvas.tag_lower(overlay_id)  # Put behind text
                 
                 # Add warning text
-                warning_msg = "NSFW OR VIOLENT CONTENT DETECTED\nImage has been quarantined"
+                warning_msg = "NSFW CONTENT DETECTED\nImage has been quarantined"
                 self.preview_canvas.create_text(
                     canvas_width//2, canvas_height//2,
                     text=warning_msg,
@@ -656,6 +661,18 @@ class NSFWQuarantineApp:
                             # Show blurred preview with warning using the NEW quarantine path
                             self.window.after(0, lambda path=quarantine_path: self.load_image_preview(path, is_safe=False))
                             self.log_message(f"File quarantined to: {os.path.basename(quarantine_path)}", 'info')
+                            # --- ALERT EMAIL SYSTEM (pure Python) ---
+                            try:
+                                sender = os.environ.get('ALERT_MAIL_SENDER')
+                                recipient = os.environ.get('ALERT_MAIL_RECIPIENT')
+                                smtp_user = os.environ.get('ALERT_MAIL_USER')
+                                smtp_pass = os.environ.get('ALERT_MAIL_PASS')
+                                if not (sender and recipient and smtp_user and smtp_pass):
+                                    self.log_message('[ALERT ERROR] Email env vars missing (ALERT_MAIL_SENDER, ALERT_MAIL_RECIPIENT, ALERT_MAIL_USER, ALERT_MAIL_PASS)', 'error')
+                                else:
+                                    send_quarantine_alert(file_path, reasons, quarantine_path, sender, recipient, smtp_user, smtp_pass)
+                            except Exception as alert_exc:
+                                self.log_message(f"[ALERT ERROR] {alert_exc}", 'error')
                         else:
                             # Use original path if quarantine failed
                             self.window.after(0, lambda path=file_path: self.load_image_preview(path, is_safe=False))
@@ -699,7 +716,7 @@ class NSFWQuarantineApp:
         """Show about dialog with application information"""
         # About window
         about_window = tk.Toplevel(self.window)
-        about_window.title("About NSFW & Violence Content Scanner")
+        about_window.title("About NSFW Content Scanner")
         about_window.geometry("500x400")
         about_window.transient(self.window)  # Make it transient to main window
         about_window.grab_set()  # Make it modal
@@ -718,17 +735,17 @@ class NSFWQuarantineApp:
         content_frame.pack(fill=tk.BOTH, expand=True)
         
         about_text = (
-            "NSFW & Violence Content Scanner\n\n"
+            "NSFW Content Scanner\n\n"
             "Version 1.0\n\n"
             "This application helps identify and quarantine potentially inappropriate "
-            "content, protecting users from accidental exposure to NSFW or violent imagery.\n\n"
+            "content, protecting users from accidental exposure to NSFW imagery.\n\n"
             "Key Features:\n"
             "\u2022 Deep learning content detection\n"
-            "\u2022 NSFW and violence classification\n"
+            "\u2022 NSFW classification\n"
             "\u2022 Automatic file quarantine\n"
             "\u2022 Image preview with safety blur\n\n"
             "Created for the Namma Suraksha Hackathon\n"
-            "\u00a9 2025"
+            "2025"
         )
         
         about_label = ttk.Label(

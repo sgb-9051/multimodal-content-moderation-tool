@@ -98,7 +98,7 @@ class ContentDetector:
     
     def quarantine_file(self, file_path: str) -> Tuple[bool, str]:
         """
-        Move a file to quarantine directory.
+        Copy a file to quarantine directory (do not remove the original).
         Returns: (success, message)
         """
         try:
@@ -112,11 +112,11 @@ class ContentDetector:
                 dest_path = os.path.join(self.quarantine_dir, f"{name}_{counter}{ext}")
                 counter += 1
             
-            shutil.move(file_path, dest_path)
+            shutil.copy2(file_path, dest_path)
             # Track the mapping from original to quarantined path
             self.quarantine_map[file_path] = dest_path
             return True, dest_path
-            
+        
         except Exception as e:
             return False, f"Failed to quarantine: {e}"
     
