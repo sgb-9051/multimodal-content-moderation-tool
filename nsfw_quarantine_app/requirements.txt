@@ -5,3 +5,4 @@ timm>=0.6.0
 numpy>=1.19.0
 opencv-python>=4.5.0
 python-dotenv>=1.0.0
+better-profanity>=0.7.0

@@ -5,8 +5,12 @@ import torch
 import timm
 from typing import Tuple, List, Dict
 import logging
+from better_profanity import profanity
 
 logging.basicConfig(level=logging.INFO)
+
+import shutil
+import subprocess
 
 class ContentDetector:
     def __init__(self, quarantine_dir: str = "quarantine", confidence_threshold: float = 0.5):
@@ -16,10 +20,11 @@ class ContentDetector:
         self.quarantine_dir = quarantine_dir
         self.confidence_threshold = confidence_threshold
         self._ensure_quarantine_dir()
-        
+        self._check_ffmpeg_available()
         try:
             # Initialize the NSFW detection model
             logging.info("Loading NSFW detection model...")
+
             self.nsfw_model = timm.create_model("hf_hub:Marqo/nsfw-image-detection-384", pretrained=True)
             self.nsfw_model.eval()
             self.nsfw_data_config = timm.data.resolve_model_data_config(self.nsfw_model)
@@ -53,6 +58,13 @@ class ContentDetector:
         """Ensure quarantine directory exists."""
         if not os.path.exists(self.quarantine_dir):
             os.makedirs(self.quarantine_dir)
+
+    def _check_ffmpeg_available(self):
+        """Check if ffmpeg is available on the system PATH and log a warning if not."""
+        try:
+            subprocess.run(["ffmpeg", "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        except Exception:
+            logging.warning("ffmpeg not found. Audio analysis will not work until ffmpeg is installed and on PATH.")
     
 
 
@@ -126,19 +138,47 @@ class ContentDetector:
         
     def scan_file(self, file_path: str) -> Tuple[bool, List[str]]:
         """
-        Scan a single file for NSFW or violent content.
+        Scan a single file for NSFW images or profanity in text files.
         Returns: (is_flagged, reasons)
         """
         try:
-            is_inappropriate, max_prob, reasons = self.analyze_image_content(file_path)
-            
-            if is_inappropriate:
-                logging.warning(f"Inappropriate content detected in {file_path} with score {max_prob:.3f}")
+            ext = os.path.splitext(file_path)[1].lower()
+            if ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']:
+                is_inappropriate, max_prob, reasons = self.analyze_image_content(file_path)
+                if is_inappropriate:
+                    logging.warning(f"Inappropriate image detected in {file_path} with score {max_prob:.3f}")
+                else:
+                    logging.info(f"Image file {file_path} is safe (max inappropriate score: {max_prob:.3f})")
+                return is_inappropriate, reasons
+            elif ext in ['.txt', '.md', '.csv', '.log']:
+                is_profane, reasons = self.analyze_text_content(file_path)
+                if is_profane:
+                    logging.warning(f"Profanity detected in text file {file_path}")
+                else:
+                    logging.info(f"Text file {file_path} is safe (no profanity detected)")
+                return is_profane, reasons
+
             else:
-                logging.info(f"File {file_path} is safe (max inappropriate score: {max_prob:.3f})")
-            
-            return is_inappropriate, reasons
-            
+                logging.info(f"File type not supported for scanning: {file_path}")
+                return False, ["Unsupported file type for scanning."]
         except Exception as e:
             logging.error(f"Error scanning file {file_path}: {e}")
             return False, [f"Error scanning file: {e}"]
+    def analyze_text_content(self, text_path: str) -> Tuple[bool, List[str]]:
+        """
+        Analyze a text file for profanity using better_profanity.
+        Returns: (is_profane, reasons)
+        """
+        try:
+            profanity.load_censor_words()
+            with open(text_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+            if profanity.contains_profanity(content):
+                censored = profanity.censor(content)
+                reasons = ["Profanity detected in text file.", f"Censored preview: {censored[:100]}..."]
+                return True, reasons
+            else:
+                return False, []
+        except Exception as e:
+            logging.error(f"Error analyzing text file {text_path}: {e}")
+            return False, [f"Error analyzing text file: {e}"]

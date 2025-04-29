@@ -1,3 +1,8 @@
+import sys
+print(f'PYTHON EXECUTABLE: {sys.executable}')
+print('PYTHONPATH:')
+for p in sys.path:
+    print('   ', p)
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
@@ -19,7 +24,7 @@ load_dotenv()
 
 logger = setup_logger()
 
-# Define colors
+# Define colors for theming
 COLORS = {
     'primary': '#1f7db3',     # Blue
     'secondary': '#f9f9f9',  # Light gray
@@ -31,6 +36,17 @@ COLORS = {
     'header': '#095580',     # Dark blue
     'button_text': '#000000', # Black for button text
     'disabled': '#bbbbbb',   # Gray for disabled elements
+}
+
+# Define fonts for consistent typography
+FONTS = {
+    'base': ('Segoe UI', 10),
+    'header': ('Segoe UI', 18, 'bold'),
+    'section': ('Segoe UI', 12, 'bold'),
+    'label': ('Segoe UI', 10),
+    'button': ('Segoe UI', 10, 'bold'),
+    'small': ('Segoe UI', 8),
+    'mono': ('Consolas', 9),
 }
 
 class NSFWQuarantineApp:
@@ -109,7 +125,8 @@ class NSFWQuarantineApp:
                                    selectforeground='white',
                                    background=COLORS['secondary'],
                                    highlightthickness=0,
-                                   bd=1)
+                                   bd=1,
+                                   font=FONTS['label'])
         self.file_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.file_list.bind('<<ListboxSelect>>', self.on_file_select)
         
@@ -140,7 +157,7 @@ class NSFWQuarantineApp:
         status_frame = ttk.Frame(status_section)
         status_frame.pack(fill=tk.X, padx=5, pady=5)
         
-        self.status_icon = ttk.Label(status_frame, text='🔍', font=('Segoe UI', 16))
+        self.status_icon = ttk.Label(status_frame, text='🔍', font=('Segoe UI', 16), background=COLORS['background'])
         self.status_icon.pack(side=tk.LEFT, padx=(0, 5))
         
         status_right = ttk.Frame(status_frame)
@@ -173,7 +190,7 @@ class NSFWQuarantineApp:
         self.preview_canvas = tk.Canvas(self.preview_frame, bg=COLORS['secondary'], highlightthickness=0)
         self.preview_canvas.pack(fill=tk.BOTH, expand=True)
         
-        self.no_preview_label = ttk.Label(self.preview_canvas, text='No preview available', style='Placeholder.TLabel')
+        self.no_preview_label = ttk.Label(self.preview_canvas, text='No preview available', style='Placeholder.TLabel', font=FONTS['label'])
         self.no_preview_label.place(relx=0.5, rely=0.5, anchor='center')
         
         # Log section
@@ -185,7 +202,7 @@ class NSFWQuarantineApp:
         log_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
         self.log_text = tk.Text(log_frame, height=8, wrap=tk.WORD, state='disabled',
-                              font=('Consolas', 9),
+                              font=FONTS['mono'],
                               bg=COLORS['secondary'],
                               padx=5, pady=5,
                               highlightthickness=0,
@@ -202,7 +219,7 @@ class NSFWQuarantineApp:
         
         footer_text = ttk.Label(footer_frame, 
                                text='2025 KernelKlashKrew Team | Designed for hackathon', 
-                               style='Footer.TLabel')
+                               style='Footer.TLabel', font=FONTS['small'])
         footer_text.pack(side=tk.LEFT)
         
         # Configure tags for log coloring
@@ -218,14 +235,15 @@ class NSFWQuarantineApp:
         # About button
         about_button = ttk.Button(footer_frame, text='About', command=self.show_about, style='TButton')
         about_button.pack(side=tk.RIGHT, padx=10)
+        # Consider using 'Primary.TButton' or 'Action.TButton' for more visual feedback if desired
     
     def browse_files(self):
         """Handle file browsing and selection."""
         file_types = (
             ('Image Files', '*.jpg;*.jpeg;*.png;*.gif;*.bmp'),
-            ('JPEG Images', '*.jpg;*.jpeg'),
-            ('PNG Images', '*.png'),
-            ('GIF Images', '*.gif'),
+            ('Audio Files', '*.wav;*.mp3;*.m4a;*.flac;*.ogg'),
+            ('Text Files', '*.txt;*.md;*.csv;*.log'),
+            ('All Supported', '*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.wav;*.mp3;*.m4a;*.flac;*.ogg;*.txt;*.md;*.csv;*.log'),
             ('All Files', '*.*')
         )
         
@@ -273,23 +291,24 @@ class NSFWQuarantineApp:
         """Configure custom ttk styles for the application."""
         style = ttk.Style()
         
-        # Configure default styles
+        # Configure default styles for all frames and labels
         style.configure('TFrame', background=COLORS['background'])
-        style.configure('TLabel', background=COLORS['background'], foreground=COLORS['text'])
-        style.configure('TButton', font=('Segoe UI', 9))
+        style.configure('TLabel', background=COLORS['background'], foreground=COLORS['text'], font=FONTS['label'])
+        style.configure('TButton', font=FONTS['button'], padding=6)
         style.configure('TLabelframe', background=COLORS['background'])
-        style.configure('TLabelframe.Label', background=COLORS['background'], foreground=COLORS['primary'], font=('Segoe UI', 10, 'bold'))
+        style.configure('TLabelframe.Label', background=COLORS['background'], foreground=COLORS['primary'], font=FONTS['section'])
         
         # Custom styles for various elements
-        style.configure('Header.TLabel', font=('Segoe UI', 18, 'bold'), foreground=COLORS['header'])
-        style.configure('Version.TLabel', font=('Segoe UI', 8), foreground='gray')
-        style.configure('Status.TLabel', font=('Segoe UI', 11, 'bold'))
-        style.configure('Detail.TLabel', font=('Segoe UI', 8), foreground='gray')
-        style.configure('Footer.TLabel', font=('Segoe UI', 8), foreground='gray')
-        style.configure('Placeholder.TLabel', foreground='gray')
+        style.configure('Header.TLabel', font=FONTS['header'], foreground=COLORS['header'], background=COLORS['background'])
+        style.configure('Version.TLabel', font=FONTS['small'], foreground='gray', background=COLORS['background'])
+        style.configure('Status.TLabel', font=('Segoe UI', 11, 'bold'), foreground=COLORS['primary'], background=COLORS['background'])
+        style.configure('Detail.TLabel', font=FONTS['small'], foreground='gray', background=COLORS['background'])
+        style.configure('Footer.TLabel', font=FONTS['small'], foreground='gray', background=COLORS['background'])
+        style.configure('Placeholder.TLabel', foreground='gray', background=COLORS['secondary'], font=FONTS['label'])
         
-        # Create a better-looking button styling
-        # Note: We need to use map to properly handle button states
+        # Button styles
+        style.configure('Primary.TButton', font=FONTS['button'], background=COLORS['primary'], foreground=COLORS['button_text'], borderwidth=1, focusthickness=3, focuscolor=COLORS['header'])
+        style.configure('Action.TButton', font=FONTS['button'], background=COLORS['accent'], foreground=COLORS['button_text'], borderwidth=1, focusthickness=3, focuscolor=COLORS['accent'])
         style.map('Primary.TButton',
             foreground=[('active', COLORS['button_text']), ('!disabled', COLORS['button_text'])],
             background=[('active', '#2a8bc4'), ('!disabled', COLORS['primary'])],
@@ -300,8 +319,6 @@ class NSFWQuarantineApp:
             background=[('active', '#f85c4c'), ('!disabled', COLORS['accent'])],
             relief=[('pressed', 'sunken'), ('!pressed', 'raised')]
         )
-        
-        # Regular button style
         style.map('TButton',
             foreground=[('disabled', COLORS['disabled']), ('!disabled', COLORS['text'])],
             background=[('active', COLORS['secondary']), ('!disabled', COLORS['background'])]
@@ -311,10 +328,13 @@ class NSFWQuarantineApp:
         style.configure('Accent.Horizontal.TProgressbar', background=COLORS['accent'])
         
         # Panel and section styles
-        style.configure('Panel.TFrame', relief='flat')
-        style.configure('Preview.TFrame', relief='solid', borderwidth=1)
-        style.configure('Section.TLabelframe', borderwidth=1, relief='solid')
+        style.configure('Panel.TFrame', relief='flat', background=COLORS['secondary'])
+        style.configure('Preview.TFrame', relief='solid', borderwidth=1, background=COLORS['secondary'])
+        style.configure('Section.TLabelframe', borderwidth=1, relief='solid', background=COLORS['background'])
         style.configure('Footer.TFrame', background=COLORS['background'], relief='flat', borderwidth=0)
+        
+        # Add tooltip style (future use)
+        style.configure('Tooltip.TLabel', background='#ffffe0', foreground=COLORS['text'], font=FONTS['small'], borderwidth=1, relief='solid')
 
     def on_file_select(self, event):
         """Handle selection of a file in the file list."""
@@ -382,91 +402,76 @@ class NSFWQuarantineApp:
         return Image.fromarray(blurred)
     
     def load_image_preview(self, file_path, is_safe=None):
-        """Load and display an image preview. 
+        """Load and display a preview of an image or text file.
         
         Parameters:
-        - file_path: Path to the image file
-        - is_safe: If None, show blurred (default). If True, show unblurred. If False, show blurred with warning.
+        - file_path: Path to the file
+        - is_safe: If None, show as unscanned. If True, show safe. If False, show flagged/quarantined.
         """
         try:
-            # Check if file exists before trying to open it
             if not os.path.exists(file_path):
                 raise FileNotFoundError(f"File not found: {file_path}")
-                
+            
             # Clear previous preview
             self.preview_canvas.delete("all")
             if hasattr(self, 'preview_photo'):
                 del self.preview_photo
-                
-            # Load the image
-            img = Image.open(file_path)
             
-            # Get canvas dimensions
+            ext = os.path.splitext(file_path)[1].lower()
+            if ext in ['.txt', '.md', '.csv', '.log']:
+                # For text files, do not display any preview, just show placeholder
+                self.no_preview_label.configure(text="No preview available")
+                self.no_preview_label.place(relx=0.5, rely=0.5, anchor='center')
+                return
+            elif ext in ['.wav', '.mp3', '.m4a', '.flac', '.ogg']:
+                # For audio files, show audio placeholder
+                self.no_preview_label.configure(text="Audio file – no preview available")
+                self.no_preview_label.place(relx=0.5, rely=0.5, anchor='center')
+                return
+
+            # Default: image preview logic (unchanged)
+            img = Image.open(file_path)
             canvas_width = self.preview_canvas.winfo_width()
             canvas_height = self.preview_canvas.winfo_height()
-            
-            # If canvas not yet sized, use a default size
             if canvas_width <= 1:
                 canvas_width = 300
             if canvas_height <= 1:
                 canvas_height = 300
-            
-            # Calculate resize ratio to fit in canvas
             img_width, img_height = img.size
             ratio = min(canvas_width/img_width, canvas_height/img_height)
             new_width = int(img_width * ratio)
             new_height = int(img_height * ratio)
-            
-            # Resize the image
             img = img.resize((new_width, new_height), Image.LANCZOS)
-            
-            # --- FIXED LOGIC START ---
-            # Always check scan results for the current display path
             scan_key = file_path
             if scan_key in self.scan_results:
                 is_flagged, _ = self.scan_results[scan_key]
                 is_safe = not is_flagged
-            # --- FIXED LOGIC END ---
-
             apply_blur = True
-            blur_radius = 125  # Strong blur for flagged content
+            blur_radius = 125
             if is_safe is True:
                 apply_blur = False
             elif is_safe is None:
-                blur_radius = 125  # Light blur for unscanned content
-
+                blur_radius = 125
             if apply_blur:
                 img = self.apply_blur(img, blur_radius=blur_radius)
-            
-            # Convert to PhotoImage
             self.preview_photo = ImageTk.PhotoImage(img)
-            
-            # Add to canvas
             self.preview_canvas.create_image(
                 canvas_width // 2, canvas_height // 2,
                 image=self.preview_photo, anchor='center'
             )
-            
-            # Show file info
             file_name = os.path.basename(file_path)
-            file_size = os.path.getsize(file_path) / 1024  # KB
+            file_size = os.path.getsize(file_path) / 1024
             file_info = f"{file_name} ({file_size:.1f} KB, {img_width}×{img_height})"
-            
             self.preview_canvas.create_text(
                 10, 10, text=file_info, anchor='nw',
                 fill='black', font=('Segoe UI', 8)
             )
-            
-            # Add status overlay for NSFW content
             if is_safe is False:
-                # Create a red overlay rectangle directly on the canvas instead
                 overlay_id = self.preview_canvas.create_rectangle(
                     0, 0, canvas_width, canvas_height,
                     fill=COLORS['accent'], stipple='gray25', outline=''
                 )
-                self.preview_canvas.tag_lower(overlay_id)  # Put behind text
-                
-                # Add warning text
+                self.preview_canvas.tag_lower(overlay_id)
                 warning_msg = "NSFW CONTENT DETECTED\nImage has been quarantined"
                 self.preview_canvas.create_text(
                     canvas_width//2, canvas_height//2,
@@ -476,7 +481,6 @@ class NSFWQuarantineApp:
                     justify=tk.CENTER
                 )
             elif is_safe is True:
-                # Create a green safe indicator
                 self.preview_canvas.create_text(
                     canvas_width - 10, 10,
                     text="✓ SAFE",
@@ -485,7 +489,6 @@ class NSFWQuarantineApp:
                     anchor='ne'
                 )
             else:
-                # Status text for unscanned image
                 self.preview_canvas.create_text(
                     canvas_width - 10, 10,
                     text="? UNSCANNED",
@@ -493,12 +496,8 @@ class NSFWQuarantineApp:
                     fill='gray',
                     anchor='ne'
                 )
-            
-            # Hide the placeholder label
             self.no_preview_label.place_forget()
-            
         except Exception as e:
-            # Show placeholder and error
             self.preview_canvas.delete("all")
             if isinstance(e, FileNotFoundError):
                 self.no_preview_label.configure(text="File not found")
@@ -679,13 +678,14 @@ class NSFWQuarantineApp:
                         
                         # Log results
                         self.log_message(f'⚠️ {filename} - {status}', 'warning')
-                        for reason in reasons:
-                            self.log_message(f'   → {reason}', 'warning')
                     else:
                         safe_files += 1
                         # Show unblurred preview for safe images
                         self.window.after(0, lambda path=file_path: self.load_image_preview(path, is_safe=True))
                         self.log_message(f'✅ {filename} - Safe', 'success')
+                    # Always log scan reasons (including transcript)
+                    for reason in reasons:
+                        self.log_message(f'   → {reason}', 'info')
                 
                 # Scan complete
                 scan_result = f"Scan complete: {safe_files} safe, {flagged_files} quarantined"
