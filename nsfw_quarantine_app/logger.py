@@ -2,6 +2,7 @@ import logging
 import os
 from datetime import datetime
 
+
 def setup_logger():
     """Set up and configure the application logger."""
     # Create logs directory if it doesn't exist

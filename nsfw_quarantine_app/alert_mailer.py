@@ -5,6 +5,7 @@ import platform
 from datetime import datetime
 import os
 
+
 def get_device_info():
     return f"{platform.system()} {platform.release()} ({platform.node()})"
 

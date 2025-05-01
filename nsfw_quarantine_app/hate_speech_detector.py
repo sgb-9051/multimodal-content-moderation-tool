@@ -2,6 +2,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch.nn.functional as F
 
+
 class HateSpeechDetector:
     def __init__(self, model_name="Hate-speech-CNERG/dehatebert-mono-english", threshold=0.5):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)

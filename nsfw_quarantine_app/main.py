@@ -60,7 +60,7 @@ class NSFWQuarantineApp:
         
         # Create main window
         self.window = tk.Tk()
-        self.window.title('Namma Suraksha - Content Security Tool')
+        self.window.title('Obscene Media Detection Tool')
         self.window.geometry('900x700')
         self.window.minsize(800, 600)
         self.window.configure(bg=COLORS['background'])
@@ -93,7 +93,7 @@ class NSFWQuarantineApp:
         
         # Application title
         title = ttk.Label(header_frame, 
-                         text='Namma Suraksha - Content Security Tool', 
+                         text='Obscene Media Detection Tool', 
                           style='Header.TLabel')
         title.pack(side=tk.LEFT, pady=10)
         
@@ -240,15 +240,13 @@ class NSFWQuarantineApp:
     def browse_files(self):
         """Handle file browsing and selection."""
         file_types = (
+            ('All Files', '*.*'),
             ('Image Files', '*.jpg;*.jpeg;*.png;*.gif;*.bmp'),
-            ('Audio Files', '*.wav;*.mp3;*.m4a;*.flac;*.ogg'),
-            ('Text Files', '*.txt;*.md;*.csv;*.log'),
-            ('All Supported', '*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.wav;*.mp3;*.m4a;*.flac;*.ogg;*.txt;*.md;*.csv;*.log'),
-            ('All Files', '*.*')
+            ('Text Files', '*.txt;*.md;*.csv;*.log')   
         )
         
         files = filedialog.askopenfilenames(
-            title='Choose Images to Scan',
+            title='Choose Files to Scan',
             filetypes=file_types
         )
         
@@ -738,13 +736,12 @@ class NSFWQuarantineApp:
             "NSFW Content Scanner\n\n"
             "Version 1.0\n\n"
             "This application helps identify and quarantine potentially inappropriate "
-            "content, protecting users from accidental exposure to NSFW imagery.\n\n"
+            "content, protecting users from accidental exposure to NSFW imagery, Hate Speech and Profanity.\n\n"
             "Key Features:\n"
             "\u2022 Deep learning content detection\n"
             "\u2022 NSFW classification\n"
             "\u2022 Automatic file quarantine\n"
             "\u2022 Image preview with safety blur\n\n"
-            "Created for the Namma Suraksha Hackathon\n"
             "2025"
         )
         

@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.INFO)
 import shutil
 import subprocess
 
+
 class ContentDetector:
     def __init__(self, quarantine_dir: str = "quarantine", confidence_threshold: float = 0.5):
         # Dictionary to track original path to quarantined path mapping
