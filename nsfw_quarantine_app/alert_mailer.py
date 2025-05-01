@@ -50,7 +50,7 @@ def send_quarantine_alert(file_path, reasons, quarantine_path=None, sender=None,
         f"Timestamp: {timestamp}\n"
         f"Severity: {severity}\n"
         f"IP Address: {ip_address}\n"
-        f"Device Info: {device_info}\n"
+        f"User Agent: {device_info}\n"
         f"Reasons:\n{reason_text}\n"
     )
     try:

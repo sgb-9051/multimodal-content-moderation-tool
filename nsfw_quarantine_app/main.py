@@ -32,7 +32,7 @@ COLORS = {
     'text': '#333333',       # Dark gray
     'success': '#2ecc71',    # Green
     'warning': '#f39c12',    # Orange
-    'background': '#ffffff', # White
+    'background': '#e6f0fa', 
     'header': '#095580',     # Dark blue
     'button_text': '#000000', # Black for button text
     'disabled': '#bbbbbb',   # Gray for disabled elements

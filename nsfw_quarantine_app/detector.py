@@ -6,6 +6,7 @@ import timm
 from typing import Tuple, List, Dict
 import logging
 from better_profanity import profanity
+from hate_speech_detector import HateSpeechDetector
 
 logging.basicConfig(level=logging.INFO)
 
@@ -51,8 +52,8 @@ class ContentDetector:
         except Exception as e:
             logging.error(f"Error initializing content detection models: {e}")
             raise
-    
-
+        
+        self.hate_speech_detector = HateSpeechDetector()
     
     def _ensure_quarantine_dir(self):
         """Ensure quarantine directory exists."""
@@ -65,10 +66,6 @@ class ContentDetector:
             subprocess.run(["ffmpeg", "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
         except Exception:
             logging.warning("ffmpeg not found. Audio analysis will not work until ffmpeg is installed and on PATH.")
-    
-
-
-
     
     def analyze_image_content(self, image_path: str) -> Tuple[bool, float, List[str]]:
         """Analyze image content using NSFW detection model."""
@@ -138,7 +135,7 @@ class ContentDetector:
         
     def scan_file(self, file_path: str) -> Tuple[bool, List[str]]:
         """
-        Scan a single file for NSFW images or profanity in text files.
+        Scan a single file for NSFW images or profanity/hate speech in text files.
         Returns: (is_flagged, reasons)
         """
         try:
@@ -151,13 +148,12 @@ class ContentDetector:
                     logging.info(f"Image file {file_path} is safe (max inappropriate score: {max_prob:.3f})")
                 return is_inappropriate, reasons
             elif ext in ['.txt', '.md', '.csv', '.log']:
-                is_profane, reasons = self.analyze_text_content(file_path)
-                if is_profane:
-                    logging.warning(f"Profanity detected in text file {file_path}")
+                is_flagged, reasons = self.analyze_text_content(file_path)
+                if is_flagged:
+                    logging.warning(f"Flagged text file {file_path}")
                 else:
-                    logging.info(f"Text file {file_path} is safe (no profanity detected)")
-                return is_profane, reasons
-
+                    logging.info(f"Text file {file_path} is safe (no issues detected)")
+                return is_flagged, reasons
             else:
                 logging.info(f"File type not supported for scanning: {file_path}")
                 return False, ["Unsupported file type for scanning."]
@@ -166,19 +162,27 @@ class ContentDetector:
             return False, [f"Error scanning file: {e}"]
     def analyze_text_content(self, text_path: str) -> Tuple[bool, List[str]]:
         """
-        Analyze a text file for profanity using better_profanity.
-        Returns: (is_profane, reasons)
+        Analyze a text file for profanity and hate speech.
+        Returns: (is_flagged, reasons)
         """
         try:
             profanity.load_censor_words()
             with open(text_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
+            reasons = []
+            is_flagged = False
+            # Profanity check
             if profanity.contains_profanity(content):
                 censored = profanity.censor(content)
-                reasons = ["Profanity detected in text file.", f"Censored preview: {censored[:100]}..."]
-                return True, reasons
-            else:
-                return False, []
+                reasons.append("Profanity detected in text file.")
+                reasons.append(f"Censored preview: {censored[:100]}...")
+                is_flagged = True
+            # Hate speech check
+            is_hate, hate_prob = self.hate_speech_detector.is_hate_speech(content)
+            if is_hate:
+                reasons.append(f"Hate speech detected in text file. (probability: {hate_prob:.2f})")
+                is_flagged = True
+            return is_flagged, reasons
         except Exception as e:
             logging.error(f"Error analyzing text file {text_path}: {e}")
             return False, [f"Error analyzing text file: {e}"]
