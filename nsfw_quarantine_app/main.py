@@ -60,7 +60,7 @@ class NSFWQuarantineApp:
         
         # Create main window
         self.window = tk.Tk()
-        self.window.title('Obscene Media Detection Tool')
+        self.window.title('Multimodal Content Moderation Tool')
         self.window.geometry('900x700')
         self.window.minsize(800, 600)
         self.window.configure(bg=COLORS['background'])
@@ -93,7 +93,7 @@ class NSFWQuarantineApp:
         
         # Application title
         title = ttk.Label(header_frame, 
-                         text='Obscene Media Detection Tool', 
+                         text='Multimodal Content Moderation Tool', 
                           style='Header.TLabel')
         title.pack(side=tk.LEFT, pady=10)
         
