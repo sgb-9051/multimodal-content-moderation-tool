@@ -1,9 +1,5 @@
 # Obscene Media Detection Tool
 
-## Application GUI
-
-![Application_GUI](https://github.com/user-attachments/assets/94d7532e-0a7f-492e-94d6-863aa1cf4406)
-
 ## Steps
 
 1. Create Virtual Environment
