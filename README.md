@@ -1,4 +1,4 @@
-# Obscene Media Detection Tool
+# Multimodal Content Moderation Tool
 
 ## Steps
 
